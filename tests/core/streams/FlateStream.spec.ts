@@ -3,7 +3,7 @@ import fs from 'fs';
 import FlateStream from '../../../src/core/streams/FlateStream';
 import Stream from '../../../src/core/streams/Stream';
 
-const DIR = `./data/flate`;
+const DIR = `${__dirname}/data/flate`;
 const FILES = ['1', '2', '3', '4', '5', '6', '7'];
 
 describe(`FlateStream`, () => {
