@@ -58,9 +58,9 @@ pdfDoc.registerFontkit(fontkit)
 
 <div align="center">
   <!-- NPM Version -->
-  <a href="https://www.npmjs.com/package/pdf-lib">
+  <a href="https://www.npmjs.com/package/@pdfme/pdf-lib">
     <img
-      src="https://img.shields.io/npm/v/pdf-lib.svg?style=flat-square"
+      src="https://img.shields.io/npm/v/@pdfme/pdf-lib.svg?style=flat-square"
       alt="NPM Version"
     />
   </a>
