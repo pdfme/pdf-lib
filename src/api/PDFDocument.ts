@@ -29,6 +29,7 @@ import {
   PDFPageLeaf,
   PDFPageTree,
   PDFParser,
+  PDFRawStream,
   PDFStreamWriter,
   PDFString,
   PDFWriter,
@@ -151,7 +152,10 @@ export default class PDFDocument {
       throwOnInvalidObject,
       capNumbers,
     ).parseDocument();
-    if (!!context.lookup(context.trailerInfo.Encrypt) && password!==undefined) {
+    if (
+      !!context.lookup(context.trailerInfo.Encrypt) &&
+      password !== undefined
+    ) {
       // Decrypt
       const fileIds = context.lookup(context.trailerInfo.ID, PDFArray);
       const encryptDict = context.lookup(context.trailerInfo.Encrypt, PDFDict);
@@ -554,6 +558,82 @@ export default class PDFDocument {
     assertIs(modificationDate, 'modificationDate', [[Date, 'Date']]);
     const key = PDFName.of('ModDate');
     this.getInfoDict().set(key, PDFString.fromDate(modificationDate));
+  }
+
+  /**
+   * set printing profile of this document.
+   * @param subType eg. GTS_PDFA1, GTS_PDFX
+   * @param iccBuffer icc profile buffer content
+   * @param info string
+   * @param identifier string
+   */
+  setPrintProfile({
+    subType,
+    iccBuffer,
+    info,
+    identifier,
+  }: {
+    identifier: string;
+    info?: string;
+    subType: string;
+    iccBuffer: Buffer;
+  }): void {
+    const iccStream = this.context.stream(iccBuffer, {
+      Length: iccBuffer.length,
+    });
+    const outputIntent = this.context.obj({
+      Type: 'OutputIntent',
+      S: subType,
+      OutputConditionIdentifier: PDFString.of(identifier),
+      Info: info ? PDFString.of(info) : PDFString.of(identifier),
+      DestOutputProfile: this.context.register(iccStream),
+    });
+    const outputIntentRef = this.context.register(outputIntent);
+    this.catalog.set(
+      PDFName.of('OutputIntents'),
+      this.context.obj([outputIntentRef]),
+    );
+  }
+
+  /**
+   * Get printing profile
+   * @returns printing profile info.
+   */
+  getPrintProfile():
+    | {
+        type?: string;
+        subType?: string;
+        identifier: string;
+        info?: string;
+        iccBuffer?: Uint8Array;
+      }
+    | undefined {
+    const printProfile = this.catalog.lookup(
+      PDFName.of('OutputIntents'),
+    ) as PDFArray;
+    if (!printProfile) return undefined;
+
+    const object = printProfile.lookup(0) as PDFDict;
+    if (!object) return undefined;
+
+    const type = object.lookup(PDFName.of('Type')) as PDFName;
+    const subType = object.lookup(PDFName.of('S')) as PDFName;
+    const identifier = object.lookup(
+      PDFName.of('OutputConditionIdentifier'),
+    ) as PDFName;
+    const info = object.lookup(PDFName.of('Info')) as PDFName;
+
+    const profile = object.lookup(
+      PDFName.of('DestOutputProfile'),
+    ) as PDFRawStream;
+
+    return {
+      type: type?.decodeText(),
+      subType: subType?.decodeText(),
+      identifier: identifier?.decodeText(),
+      info: info?.decodeText(),
+      iccBuffer: profile.contents,
+    };
   }
 
   /**
