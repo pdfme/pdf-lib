@@ -227,82 +227,62 @@ export const drawRectangle = (options: {
   clipSpaces?: Space[];
   radius?: number | PDFNumber;
 }) => {
+  let ops = [];
+  
   if (!options.radius || asNumber(options.radius) <= 0) {
-    return [
-      pushGraphicsState(),
-      options.graphicsState && setGraphicsState(options.graphicsState),
-      options.color && setFillingColor(options.color),
-      options.borderColor && setStrokingColor(options.borderColor),
-      setLineWidth(options.borderWidth),
-      options.borderLineCap && setLineCap(options.borderLineCap),
-      setDashPattern(options.borderDashArray ?? [], options.borderDashPhase ?? 0),
-      ...(options.clipSpaces ? clipSpaces(options.clipSpaces) : []),
-      options.matrix && concatTransformationMatrix(...options.matrix),
-      translate(options.x, options.y),
-      rotateRadians(toRadians(options.rotate)),
-      skewRadians(toRadians(options.xSkew), toRadians(options.ySkew)),
+    ops = [
       moveTo(0, 0),
       lineTo(0, options.height),
       lineTo(options.width, options.height),
       lineTo(options.width, 0),
       closePath(),
-
-      // prettier-ignore
-      options.color && options.borderWidth ? fillAndStroke()
-  : options.color                      ? fill()
-  : options.borderColor                ? stroke()
-            : closePath(),
-
-      popGraphicsState(),
-    ].filter(Boolean) as PDFOperator[];
+    ];
   } else {
-    const radius = asNumber(options.radius);
+    let radius = asNumber(options.radius);
     const width = asNumber(options.width);
     const height = asNumber(options.height);
 
     if (radius > width / 2.0 || radius > height / 2.0) {
-      console.warn("radius exceeds the rectangle's width or height");
-      return [];
+      radius = Math.min(width / 2.0, height / 2.0);
     }
-    const kappa = KAPPA * radius;
-
-    return [
-      pushGraphicsState(),
-      options.graphicsState && setGraphicsState(options.graphicsState),
-      options.color && setFillingColor(options.color),
-      options.borderColor && setStrokingColor(options.borderColor),
-      setLineWidth(options.borderWidth),
-      options.borderLineCap && setLineCap(options.borderLineCap),
-      setDashPattern(options.borderDashArray ?? [], options.borderDashPhase ?? 0),
-      ...(options.clipSpaces ? clipSpaces(options.clipSpaces) : []),
-      options.matrix && concatTransformationMatrix(...options.matrix),
-      translate(options.x, options.y),
-      rotateRadians(toRadians(options.rotate)),
-      skewRadians(toRadians(options.xSkew), toRadians(options.ySkew)),
+    const offset = KAPPA * radius;
+    ops = [
       moveTo(0, radius),
-      // Lower Left corner
-      appendBezierCurve(0, radius - kappa, radius - kappa, 0, radius, 0),
+      appendBezierCurve(0, radius - offset, radius - offset, 0, radius, 0),
       lineTo(width - radius, 0),
-      // Lower Right corner
-      appendBezierCurve(width - radius + kappa, 0, width, radius - kappa, width, radius),
+      appendBezierCurve(width - radius + offset, 0, width, radius - offset, width, radius),
       lineTo(width, height - radius),
-      // Upper Right corner
-      appendBezierCurve(width, height - radius + kappa, width - radius + kappa, height, width - radius, height),
+      appendBezierCurve(width, height - radius + offset, width - radius + offset, height, width - radius, height),
       lineTo(radius, height),
-      // Upper Left corner
-      appendBezierCurve(radius - kappa, height, 0, height - radius + kappa, 0, height - radius),
+      appendBezierCurve(radius - offset, height, 0, height - radius + offset, 0, height - radius),
       closePath(),
-
-      // prettier-ignore
-      options.color && options.borderWidth ? fillAndStroke()
-        : options.color ? fill()
-          : options.borderColor ? stroke()
-            : closePath(),
-
-      popGraphicsState(),
-    ].filter(Boolean) as PDFOperator[];
+    ];
   }
 
+  return [
+    pushGraphicsState(),
+    options.graphicsState && setGraphicsState(options.graphicsState),
+    options.color && setFillingColor(options.color),
+    options.borderColor && setStrokingColor(options.borderColor),
+    setLineWidth(options.borderWidth),
+    options.borderLineCap && setLineCap(options.borderLineCap),
+    setDashPattern(options.borderDashArray ?? [], options.borderDashPhase ?? 0),
+    ...(options.clipSpaces ? clipSpaces(options.clipSpaces) : []),
+    options.matrix && concatTransformationMatrix(...options.matrix),
+    translate(options.x, options.y),
+    rotateRadians(toRadians(options.rotate)),
+    skewRadians(toRadians(options.xSkew), toRadians(options.ySkew)),
+
+    ...ops,
+
+    // prettier-ignore
+    options.color && options.borderWidth ? fillAndStroke()
+      : options.color ? fill()
+        : options.borderColor ? stroke()
+          : closePath(),
+
+    popGraphicsState(),
+  ].filter(Boolean) as PDFOperator[];
 }
 
 const KAPPA = 4.0 * ((Math.sqrt(2) - 1.0) / 3.0);
@@ -404,24 +384,24 @@ export const drawEllipse = (options: {
     // See https://github.com/Hopding/pdf-lib/pull/511#issuecomment-667685655.
     ...(options.rotate === undefined
       ? drawEllipsePath({
-        x: options.x,
-        y: options.y,
-        xScale: options.xScale,
-        yScale: options.yScale,
-      })
+          x: options.x,
+          y: options.y,
+          xScale: options.xScale,
+          yScale: options.yScale,
+        })
       : drawEllipseCurves({
-        x: options.x,
-        y: options.y,
-        xScale: options.xScale,
-        yScale: options.yScale,
-        rotate: options.rotate ?? degrees(0),
-      })),
+          x: options.x,
+          y: options.y,
+          xScale: options.xScale,
+          yScale: options.yScale,
+          rotate: options.rotate ?? degrees(0),
+        })),
 
     // prettier-ignore
     options.color && options.borderWidth ? fillAndStroke()
   : options.color                      ? fill()
   : options.borderColor                ? stroke()
-          : closePath(),
+  : closePath(),
 
     popGraphicsState(),
   ].filter(Boolean) as PDFOperator[];
@@ -468,7 +448,7 @@ export const drawSvgPath = (
     options.color && options.borderWidth ? fillAndStroke()
   : options.color                      ? options.fillRule === FillRule.EvenOdd ? fillEvenOdd() : fill()
   : options.borderColor                ? stroke()
-          : closePath(),
+  : closePath(),
 
     popGraphicsState(),
   ].filter(Boolean) as PDFOperator[];
@@ -537,23 +517,23 @@ export const rotateInPlace = (options: {
   height: number | PDFNumber;
   rotation: 0 | 90 | 180 | 270;
 }) =>
-  options.rotation === 0 ? [
-    translate(0, 0),
-    rotateDegrees(0)
-  ]
-    : options.rotation === 90 ? [
+    options.rotation === 0 ? [
+      translate(0, 0),
+      rotateDegrees(0)
+    ]
+  : options.rotation === 90 ? [
       translate(options.width, 0),
       rotateDegrees(90)
     ]
-      : options.rotation === 180 ? [
-        translate(options.width, options.height),
-        rotateDegrees(180)
-      ]
-        : options.rotation === 270 ? [
-          translate(0, options.height),
-          rotateDegrees(270)
-        ]
-          : []; // Invalid rotation - noop
+  : options.rotation === 180 ? [
+      translate(options.width, options.height),
+      rotateDegrees(180)
+    ]
+  : options.rotation === 270 ? [
+      translate(0, options.height),
+      rotateDegrees(270)
+    ]
+  : []; // Invalid rotation - noop
 
 export const drawCheckBox = (options: {
   x: number | PDFNumber;
