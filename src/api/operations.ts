@@ -55,12 +55,12 @@ export interface DrawTextOptions {
   clipSpaces?: Space[];
 }
 
-const clipSpace = ({
+const clipSpace = ({ 
   topLeft,
   topRight,
   bottomRight,
   bottomLeft
-}: Space) =>
+}: Space) => 
   [
     moveTo(topLeft.x, topLeft.y),
     lineTo(topRight.x, topRight.y),
@@ -277,9 +277,9 @@ export const drawRectangle = (options: {
 
     // prettier-ignore
     options.color && options.borderWidth ? fillAndStroke()
-      : options.color ? fill()
-        : options.borderColor ? stroke()
-          : closePath(),
+  : options.color                      ? fill()
+  : options.borderColor                ? stroke()
+  : closePath(),
 
     popGraphicsState(),
   ].filter(Boolean) as PDFOperator[];
