@@ -1,6 +1,6 @@
 {
   "name": "@pdfme/pdf-lib",
-  "version": "1.18.3",
+  "version": "1.18.4",
   "description": "Create and modify PDF files with JavaScript",
   "author": "Andrew Dillon <andrew.dillon.j@gmail.com>",
   "exports": {
