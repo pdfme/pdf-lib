@@ -1354,6 +1354,7 @@ export default class PDFPage {
    *   color: rgb(0.75, 0.2, 0.2),
    *   opacity: 0.5,
    *   borderOpacity: 0.75,
+   *   radius: 0.1,
    * })
    * ```
    * @param options The options to be used when drawing the rectangle.
@@ -1390,6 +1391,7 @@ export default class PDFPage {
       1,
     );
     assertIsOneOfOrUndefined(options.blendMode, 'options.blendMode', BlendMode);
+    assertOrUndefined(options.radius, 'options.radius', ['number']);
 
     const graphicsStateKey = this.maybeEmbedGraphicsState({
       opacity: options.opacity,
@@ -1420,6 +1422,7 @@ export default class PDFPage {
         borderLineCap: options.borderLineCap ?? undefined,
         matrix: options.matrix,
         clipSpaces: options.clipSpaces,
+        radius: options.radius ?? 0,
       }),
     );
   }

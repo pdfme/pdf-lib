@@ -4,6 +4,10 @@ This version is forked from [Hopding/pdf-lib](https://github.com/Hopding/pdf-lib
 Incorporated several bug fixes and additional features into the original code.
 
  <details>
+  <summary><a href="https://github.com/pdfme/pdf-lib/pull/9">2025/03/09 - Add `radius` option for drawRectangle. This enables to render rounded corner rectangles</a></summary>
+Draw rounded corners with the specified radius using the Bezier curve function. The radius must be a positive number. If it exceeds half of the width or height, it will be clipped.
+</details>
+ <details>
   <summary><a href="https://github.com/cantoo-scribe/pdf-lib/pull/42">2023/12/22 - Incorporate @cantoo/pdf-lib Refactor drawSvg PR</a></summary>
   
 PR: [Refactor drawSvg to handle transfomations as matrix and to crop elements #42](https://github.com/cantoo-scribe/pdf-lib/pull/42)

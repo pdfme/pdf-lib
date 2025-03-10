@@ -225,7 +225,41 @@ export const drawRectangle = (options: {
   graphicsState?: string | PDFName;
   matrix?: TransformationMatrix;
   clipSpaces?: Space[];
-}) => [
+  radius?: number | PDFNumber;
+}) => {
+  let ops = [];
+  
+  if (!options.radius || asNumber(options.radius) <= 0) {
+    ops = [
+      moveTo(0, 0),
+      lineTo(0, options.height),
+      lineTo(options.width, options.height),
+      lineTo(options.width, 0),
+      closePath(),
+    ];
+  } else {
+    let radius = asNumber(options.radius);
+    const width = asNumber(options.width);
+    const height = asNumber(options.height);
+
+    if (radius > width / 2.0 || radius > height / 2.0) {
+      radius = Math.min(width / 2.0, height / 2.0);
+    }
+    const offset = KAPPA * radius;
+    ops = [
+      moveTo(0, radius),
+      appendBezierCurve(0, radius - offset, radius - offset, 0, radius, 0),
+      lineTo(width - radius, 0),
+      appendBezierCurve(width - radius + offset, 0, width, radius - offset, width, radius),
+      lineTo(width, height - radius),
+      appendBezierCurve(width, height - radius + offset, width - radius + offset, height, width - radius, height),
+      lineTo(radius, height),
+      appendBezierCurve(radius - offset, height, 0, height - radius + offset, 0, height - radius),
+      closePath(),
+    ];
+  }
+
+  return [
     pushGraphicsState(),
     options.graphicsState && setGraphicsState(options.graphicsState),
     options.color && setFillingColor(options.color),
@@ -238,11 +272,8 @@ export const drawRectangle = (options: {
     translate(options.x, options.y),
     rotateRadians(toRadians(options.rotate)),
     skewRadians(toRadians(options.xSkew), toRadians(options.ySkew)),
-    moveTo(0, 0),
-    lineTo(0, options.height),
-    lineTo(options.width, options.height),
-    lineTo(options.width, 0),
-    closePath(),
+
+    ...ops,
 
     // prettier-ignore
     options.color && options.borderWidth ? fillAndStroke()
@@ -252,6 +283,7 @@ export const drawRectangle = (options: {
 
     popGraphicsState(),
   ].filter(Boolean) as PDFOperator[];
+}
 
 const KAPPA = 4.0 * ((Math.sqrt(2) - 1.0) / 3.0);
 

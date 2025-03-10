@@ -112,6 +112,7 @@ export interface PDFPageDrawRectangleOptions extends SvgOptions {
   borderDashPhase?: number;
   borderLineCap?: LineCapStyle;
   blendMode?: BlendMode;
+  radius?: number;
 }
 
 export interface PDFPageDrawSquareOptions extends SvgOptions {
