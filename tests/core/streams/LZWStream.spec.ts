@@ -3,7 +3,7 @@ import fs from 'fs';
 import LZWStream from '../../../src/core/streams/LZWStream';
 import Stream from '../../../src/core/streams/Stream';
 
-const DIR = `./data/lzw`;
+const DIR = `${__dirname}/data/lzw`;
 const FILES = ['1', '2', '3', '4'];
 
 describe(`LZWStream`, () => {
