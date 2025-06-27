@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **This repository has been archived.**  
+> The development and maintenance of this code has been moved to https://github.com/pdfme/pdfme/tree/main/packages/pdf-lib.  
+> Please visit the new location for the latest updates, issues, and pull requests.
+
 # @pdfme/pdf-lib
 
 This version is forked from [Hopding/pdf-lib](https://github.com/Hopding/pdf-lib).  
